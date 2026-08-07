@@ -1,4 +1,3 @@
-// import { Send, Paperclip, Phone, Search } from "lucide-react";
 
 function HomePage() {
   return (
