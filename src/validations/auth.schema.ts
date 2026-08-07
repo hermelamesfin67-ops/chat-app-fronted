@@ -1,0 +1,30 @@
+import * as Yup from "yup";
+
+export const createAccountSchema = Yup.object().shape({
+  username: Yup.string().required("Username is required"),
+  phoneNumber: Yup.string()
+    .required("Phone Number is required")
+    .matches(
+      /^[97]\d{8}$/,
+      "Phone number must start with 9 or 7 and be 9 digits long",
+    ),
+  password: Yup.string().required("Password is required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Password must match")
+    .transform((value) => value.trim())
+    .required("Confirm Password is required"),
+  avatar: Yup.mixed().optional(),
+});
+
+export const loginSchema = Yup.object().shape({
+  phoneNumber: Yup.string()
+    .required("Phone Number is required")
+    .matches(
+      /^[97]\d{8}$/,
+      "Phone number must start with 9 or 7 and be 9 digits long",
+    ),
+  password: Yup.string().required("Password is required"),
+});
+
+export type CreateAccountSchemaType = Yup.InferType<typeof createAccountSchema>;
+export type LoginSchemaType = Yup.InferType<typeof loginSchema>;
