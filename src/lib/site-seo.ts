@@ -21,10 +21,10 @@ export const metaObject = (
   description: string = siteSeo.description,
 ): Metadata => {
   return {
-    title: title ? `${title} - Chatty` : siteSeo.title,
+    title: title ? `${title}` : siteSeo.title,
     description,
     openGraph: openGraph ?? {
-      title: title ? `${title} - Chatty` : title,
+      title: title || "Chatty",
       description,
       siteName: "Chatty",
       locale: "en_US",
