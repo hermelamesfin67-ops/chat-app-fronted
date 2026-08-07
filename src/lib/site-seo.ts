@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import logoImg from "@public/CbeLogo.png";
+import logoImg from "@public/logo.png";
 import { OpenGraph } from "next/dist/lib/metadata/types/opengraph-types";
 
 enum MODE {
