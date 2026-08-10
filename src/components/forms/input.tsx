@@ -126,7 +126,7 @@ const FormikInput: React.FC<FormikInputProps> = ({
                     }}
                     {...field}
                     name={name}
-                    className={cn("text-sm placeholder:text-xs [&>label>span]:font-medium bg-gray-50 dark:bg-gray-100 border-gray-50  shadow-none", inputClassName)}
+                    className={cn("text-sm placeholder:text-xs [&>label>span]:font-medium bg-gray-50 dark:bg-gray-100 border-gray-50 shadow-none", inputClassName)}
                     color={color}
                     disabled={disabled}
                     size={size as unknown as number | undefined}

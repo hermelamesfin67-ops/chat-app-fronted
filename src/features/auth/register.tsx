@@ -12,7 +12,7 @@ import useDynamicMutation from "@/lib/api/use-post-data"
 import { toast } from "sonner"
 
 function Register() {
-    const postMutation = useDynamicMutation({})
+    const postMutation = useDynamicMutation({ type: "FormData" })
 
     const initialValues = {
         username: "",
@@ -24,12 +24,14 @@ function Register() {
     const handleUserRegistration = async (values: CreateAccountSchemaType) => {
         try {
             await postMutation.mutateAsync({
-                url: "",
+                url: "signup/",
                 method: "POST",
                 body: {
                     username: values.username,
-                    phoneNumber: "+251".concat(values.phoneNumber),
+                    phone_number: "+251".concat(values.phoneNumber),
                     password: values.password,
+                    confirm_password: values.confirmPassword,
+                    profile_picture: values.avatar,
                 },
                 onSuccess: (res) => {
                     toast.success(res.message);
@@ -81,12 +83,14 @@ function Register() {
                                 name="password"
                                 label="Password"
                                 placeholder="Enter password"
+                                viewToggle
                             />
                             <FormikMaskedInput
                                 id="confirmPassword"
                                 name="confirmPassword"
                                 label="Confirm Password"
                                 placeholder="Confirm password"
+                                viewToggle
                             />
 
 

@@ -12,7 +12,7 @@ import { loginSchema, LoginSchemaType } from "@/validations/auth.schema"
 import { signIn } from "next-auth/react"
 
 function Login() {
-    const postMutation = useDynamicMutation({})
+    const postMutation = useDynamicMutation({ type: "FormData" })
 
     const initialValues = {
         phoneNumber: "",
@@ -21,10 +21,10 @@ function Login() {
     const handleLogin = async (values: LoginSchemaType) => {
         try {
             await postMutation.mutateAsync({
-                url: "",
+                url: "login/",
                 method: "POST",
                 body: {
-                    phoneNumber: "+251".concat(values.phoneNumber),
+                    phone_number: "0".concat(values.phoneNumber),
                     password: values.password,
                 },
                 onSuccess: (res) => {
@@ -62,6 +62,7 @@ function Login() {
                         name="password"
                         label="Password"
                         placeholder="Enter password"
+                        viewToggle
                     />
 
 

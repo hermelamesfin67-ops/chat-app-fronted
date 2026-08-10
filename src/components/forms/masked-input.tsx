@@ -94,7 +94,7 @@ const FormikMaskedInput: React.FC<FormikMaskedInputProps> = ({
           *
         </span>}
       </div>
-      <div className="flex items-center gap-1 w-full border rounded-md p-0.5">
+      <div className="flex items-center gap-1 w-full border rounded-md p-0.5 bg-gray-50 dark:bg-gray-100 border-gray-200 shadow-none">
         <Input
           id={id}
           autoComplete="one-time-code"
@@ -103,7 +103,7 @@ const FormikMaskedInput: React.FC<FormikMaskedInputProps> = ({
           value={displayValue}
           onChange={handleChange}
           name={name}
-          className={cn("text-sm placeholder:text-xs bg-gray-50 dark:bg-gray-100 border-gray-50 shadow-none", inputClassName)}
+          className={cn("text-sm placeholder:text-xs border-none", inputClassName)}
           color={color}
           disabled={disabled}
           size={size as unknown as number | undefined}
