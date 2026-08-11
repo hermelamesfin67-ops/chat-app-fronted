@@ -10,8 +10,10 @@ import Image from "next/image"
 import { createAccountSchema, CreateAccountSchemaType } from "@/validations/auth.schema"
 import useDynamicMutation from "@/lib/api/use-post-data"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 function Register() {
+    const router = useRouter()
     const postMutation = useDynamicMutation({ type: "FormData" })
 
     const initialValues = {
@@ -28,13 +30,14 @@ function Register() {
                 method: "POST",
                 body: {
                     username: values.username,
-                    phone_number: "+251".concat(values.phoneNumber),
+                    phone_number: "0".concat(values.phoneNumber),
                     password: values.password,
                     confirm_password: values.confirmPassword,
                     profile_picture: values.avatar,
                 },
-                onSuccess: (res) => {
-                    toast.success(res.message);
+                onSuccess: () => {
+                    router.push(routes.signIn)
+                    toast.success("Registered Successfully, Please Login again");
                 },
             });
         } catch (err) {
@@ -95,8 +98,8 @@ function Register() {
 
 
                             <div className="mt-5 flex flex-col gap-1.5 w-full">
-                                <Button size={"lg"} className={"w-full"} type="submit">
-                                    Sign Up
+                                <Button size={"lg"} disabled={postMutation.isPending} className={"w-full"} type="submit">
+                                    {postMutation.isPending ? "Loading..." : "Sign Up"}
                                 </Button>
 
                                 <Link href={routes.signIn} className="text-sm  text-primary py-3">Already have an account ? Login</Link>

@@ -3,4 +3,5 @@ export const routes = {
   signOut: "/auth/signout",
   signUp: "/auth/signup",
   error: "/auth/error",
+  home: "/",
 };

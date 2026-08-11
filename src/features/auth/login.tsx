@@ -67,8 +67,8 @@ function Login() {
 
 
                     <div className="mt-5 flex flex-col gap-1.5 w-full">
-                        <Button size={"lg"} className={"w-full"} type="submit">
-                            Login
+                        <Button size={"lg"} disabled={postMutation.isPending} className={"w-full"} type="submit">
+                            {postMutation.isPending ? "Loading..." : "Login"}
                         </Button>
                         <p className="text-xs text-primary">Forgot password?</p>
 

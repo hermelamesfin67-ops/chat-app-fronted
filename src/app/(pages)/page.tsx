@@ -1,6 +1,6 @@
 "use client"
 import SplashScreen from "@/components/splash-screen";
-import HomePage from "@/features";
+import HomePage from "@/features/home";
 import Login from "@/features/auth/login";
 import { useSession } from "next-auth/react";
 import React from "react";
