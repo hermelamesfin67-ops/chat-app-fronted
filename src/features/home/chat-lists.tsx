@@ -1,10 +1,14 @@
+"use client"
+import ChatListLoader from "@/components/loader/chat-list";
+import { MessageTime } from "@/components/message-time";
 import { queryKeys } from "@/lib/api/query-keys";
 import { useFetchData } from "@/lib/api/use-fetch-data";
-import { RefreshCw } from "lucide-react";
+import { routes } from "@/lib/routes";
 import Image from "next/image";
+import Link from "next/link";
 
 type ChatListType = {
-  id: number;
+  id: string;
   user: {
     id: number;
     name: string;
@@ -18,7 +22,7 @@ function ChatLists() {
   const getChats = useFetchData([queryKeys.getChats], `chats/`);
   const chats: ChatListType[] = getChats.data;
 
-  if (getChats.isFetching) return <RefreshCw className="animate-spin"/>;
+  if (getChats.isFetching) return <ChatListLoader />;
 
   return (
     <div className="grid gap-2 p-1">
@@ -26,6 +30,7 @@ function ChatLists() {
         chats?.map((chat) => {
           return (
             <ChatListRow
+              id={chat.id}
               messageAt={chat.created_at}
               avatar={chat.user?.avatar || "/profile.jpeg"}
               online={1}
@@ -42,6 +47,7 @@ function ChatLists() {
 export default ChatLists;
 
 type Props = {
+  id: string;
   title: string;
   message: string;
   messageAt: Date;
@@ -49,9 +55,9 @@ type Props = {
   online: number;
 };
 
-const ChatListRow = ({ title, message, messageAt, avatar, online }: Props) => {
+const ChatListRow = ({ id, title, message, messageAt, avatar, online }: Props) => {
   return (
-    <div className="flex gap-3 items-center shadow p-3 rounded-3xl">
+    <Link href={routes.chatRoom(id)} className="flex gap-3 items-center shadow p-3 rounded-3xl">
       <div className="relative p-0.5 shrink-0">
         <div className="border rounded-full w-12 h-12 bg-gray-50 overflow-hidden">
           <Image
@@ -67,17 +73,17 @@ const ChatListRow = ({ title, message, messageAt, avatar, online }: Props) => {
         )}
       </div>
 
-      <div className="fle flex-col gap-1">
-        <div className="flex justify-between gap-2">
+      <div className="fle flex-col gap-1 w-full">
+        <div className="flex justify-between w-full gap-2">
           <p className="font-semibold capitalize text-sm">{title}</p>
-          <div>
-            <p className="text-sm text-black/70">{messageAt?.toString()}</p>
+          <div className="text-sm text-black/50">
+            <MessageTime date={messageAt} />
           </div>
         </div>
         <p className="font-medium text-black/30 line-clamp-1 text-xs">
           {message}
         </p>
       </div>
-    </div>
+    </Link>
   );
 };

@@ -5,6 +5,7 @@ export const routes = {
   error: "/auth/error",
 
   home: "/",
+  chatRoom: (slug: string) => `/chats/${slug}`,
   profile: "/profile",
   search: "/search",
   settings: "/settings",

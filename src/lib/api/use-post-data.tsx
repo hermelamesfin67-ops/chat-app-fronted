@@ -62,7 +62,8 @@ const useDynamicMutation = ({
         (error as any)?.response?.data?.detail ||
         (error as any)?.response?.data?.error;
       const isString = typeof errorMessage === "string";
-      const errors = (error as any)?.response?.data?.error?.message;
+      const errors = (error as any)?.response?.data?.errors?.join(", ");
+
       toast.error(
         isString
           ? errorMessage

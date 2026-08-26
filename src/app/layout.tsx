@@ -5,6 +5,7 @@ import AppProvider from "@/layout/app-provider";
 import { authOptions } from "./api/auth/[...nextauth]/auth-options";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
+import { Toaster } from "sonner";
 
 const fontOutfit = LocalFont({
   src: [
@@ -92,6 +93,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fontOutfit.variable} h-full antialiased`}
     >
       <body suppressHydrationWarning className="min-h-full flex flex-col">
+        <Toaster position="top-center" />
         <AppProvider session={session} nonce={nonce}>
           {children}
         </AppProvider>

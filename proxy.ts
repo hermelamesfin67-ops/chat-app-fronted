@@ -1,6 +1,5 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
 import { routes } from "@/lib/routes";
 
 const blockedPaths = [
@@ -14,53 +13,57 @@ const blockedPaths = [
   "/_mmserverscripts",
 ];
 
-// Define the excluded paths
-const excludedPaths = [routes.signIn, routes.signOut, routes.error];
-
-// Custom middleware to exclude paths from auth
+const publicPaths = [
+  routes.signIn,
+  routes.signOut,
+  routes.signUp,
+  routes.error,
+];
 
 export default withAuth(
-  async function middleware(request) {
+  function middleware(request) {
     const { pathname } = request.nextUrl;
 
-    // Skip middleware for excluded paths
-    if (excludedPaths.includes(pathname)) {
+    // Public auth pages
+    if (publicPaths.includes(pathname)) {
       return NextResponse.next();
     }
 
-    const session = await getServerSession();
-
-    if (!session) {
-      return NextResponse.redirect("/auth/signin");
-    }
-
+    // Block suspicious paths
     if (blockedPaths.some((path) => pathname.startsWith(path))) {
       return new NextResponse("Not Found", { status: 404 });
     }
+
     if (pathname.startsWith("/_") || pathname.includes("cgi")) {
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    // Proceed with auth logic
     return NextResponse.next();
   },
   {
     pages: {
       signIn: routes.signIn,
-      signOut: routes.signOut,
       error: routes.error,
     },
 
     callbacks: {
-      authorized: ({ token }) => !!token,
+      authorized: ({ token, req }) => {
+        const { pathname } = req.nextUrl;
+
+        // Auth pages don't require a token
+        if (publicPaths.includes(pathname)) {
+          return true;
+        }
+
+        // Every other page requires authentication
+        return !!token;
+      },
     },
   },
 );
 
 export const config = {
   matcher: [
-    {
-      source: "/((?!env-config.js|auth/forgot-password|_next/|favicon.ico).*)",
-    },
+    "/((?!api|_next/static|_next/image|favicon.ico|env-config.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|map|txt|xml)$).*)",
   ],
 };

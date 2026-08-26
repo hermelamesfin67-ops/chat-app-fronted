@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { queryKeys } from "@/lib/api/query-keys";
 import { useFetchData } from "@/lib/api/use-fetch-data";
-import { RefreshCw } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { routes } from "@/lib/routes";
+import ChatRoomLoader from "@/components/loader/chat-room";
 
 interface Message {
   id?: number;
@@ -23,6 +25,8 @@ interface ChatRoomProps {
 
 export default function ChatRoom({ conversationId }: ChatRoomProps) {
   const router = useRouter();
+  const { data: session } = useSession()
+  const token = session?.user?.access
 
   const [text, setText] = useState("");
 
@@ -38,36 +42,35 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
 
   const getChatRoom = useFetchData(
     [queryKeys.getChats, conversationId],
-    `/messages/?conversation=${conversationId}`,
+    `messages/?conversation=${conversationId}`,
   );
 
   const roomMessages = getChatRoom.data ?? [];
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
- const messages = useMemo(
-   () => [...roomMessages, ...liveMessages],
-   [roomMessages, liveMessages],
- );
+  const messages = useMemo(
+    () => [...roomMessages, ...liveMessages],
+    [roomMessages, liveMessages],
+  );
 
   /*
    * WebSocket
    */
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
 
     if (!token) {
       console.error("No access token");
 
-      router.push("/login");
+      router.push(routes.signIn);
 
       return;
     }
 
-    const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+    const WS_URL = process.env.NEXT_PUBLIC_API_URL;
 
     const socket = new WebSocket(
-      `${WS_URL}/ws/chat/${conversationId}/?token=${token}`,
+      `${WS_URL}ws/chat/${conversationId}/?token=${token}`,
     );
 
     socketRef.current = socket;
@@ -185,14 +188,14 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
     setText("");
   }
 
-  if (getChatRoom.isFetching) return <RefreshCw className="animate-spin" />;
+  if (getChatRoom.isFetching) return <ChatRoomLoader />;
 
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
 
       <div className="h-16 border-b flex items-center px-4 gap-3">
-        <button onClick={() => router.push("/chat")} className="text-xl">
+        <button onClick={() => router.push(routes.home)} className="text-xl">
           ←
         </button>
 

@@ -10,8 +10,20 @@ import useDynamicMutation from "@/lib/api/use-post-data"
 import { toast } from "sonner"
 import { loginSchema, LoginSchemaType } from "@/validations/auth.schema"
 import { signIn } from "next-auth/react"
+import SplashScreen from "@/components/splash-screen"
+import { useEffect, useState } from "react"
 
 function Login() {
+    const [showSplash, setShowSplash] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowSplash(false);
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, []);
+
+
     const postMutation = useDynamicMutation({ type: "FormData" })
 
     const initialValues = {
@@ -39,6 +51,10 @@ function Login() {
             console.log(err);
         }
     };
+
+    if (showSplash) {
+        return <SplashScreen />;
+    }
     return (
         <AuthWrapper title="Welcome back">
             <Formik

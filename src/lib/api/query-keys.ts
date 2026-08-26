@@ -1,3 +1,3 @@
 export const queryKeys = {
-  getChats: "getChatsApi",
+  getChats: "/chats",
 };
