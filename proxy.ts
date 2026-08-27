@@ -43,6 +43,7 @@ export default withAuth(
   {
     pages: {
       signIn: routes.signIn,
+      signOut: routes.signOut,
       error: routes.error,
     },
 

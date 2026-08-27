@@ -3,6 +3,14 @@ import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
+  },
 };
 
 export default withPWA({
@@ -17,5 +25,6 @@ export default withPWA({
       },
     },
   ],
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 })(nextConfig as any);

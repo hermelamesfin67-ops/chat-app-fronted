@@ -14,3 +14,26 @@ export function formatDate(
   if (!date) return "";
   return dayjs(date).format(format);
 }
+
+export const formatDateSeparator = (date:Date) => {
+  const messageDate = new Date(date);
+  const today = new Date();
+
+  const isToday =
+    messageDate.toDateString() === today.toDateString();
+
+  if (isToday) return "Today";
+
+  const yesterday = new Date();
+  yesterday.setDate(today.getDate() - 1);
+
+  if (messageDate.toDateString() === yesterday.toDateString()) {
+    return "Yesterday";
+  }
+
+  return messageDate.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+};

@@ -21,7 +21,7 @@ function Register() {
         phoneNumber: "",
         password: "",
         confirmPassword: "",
-        avatar: null as unknown as File
+        avatar: "" as unknown as File
     }
     const handleUserRegistration = async (values: CreateAccountSchemaType) => {
         try {
