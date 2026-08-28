@@ -18,6 +18,7 @@ function Register() {
 
     const initialValues = {
         username: "",
+        email: "",
         phoneNumber: "",
         password: "",
         confirmPassword: "",
@@ -31,6 +32,7 @@ function Register() {
                 body: {
                     username: values.username,
                     phone_number: "0".concat(values.phoneNumber),
+                    email: values.email,
                     password: values.password,
                     confirm_password: values.confirmPassword,
                     profile_picture: values.avatar,
@@ -70,6 +72,13 @@ function Register() {
                                 label="Username"
                                 pattern="username"
                                 placeholder="Enter username"
+                            />
+                            <FormikInput
+                                id="email"
+                                name="email"
+                                label="Email"
+                                pattern="email"
+                                placeholder="Enter Email"
                             />
                             <FormikInput
                                 id="phoneNumber"
