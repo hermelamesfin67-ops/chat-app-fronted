@@ -1,21 +1,22 @@
 "use client"
 import useDynamicMutation from "@/lib/api/use-post-data";
 import { SquareUser, LockKeyhole, Globe, Bell, MessageCircleQuestionMark, LogOut, ChevronRight } from "lucide-react"
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 
 function Settings() {
+    const {data: session} = useSession()
     const postMutation = useDynamicMutation({})
     const handleLogout = async () => {
-        signOut()
-        return
         try {
             await postMutation.mutateAsync({
                 url: "logout/",
                 method: "POST",
                 body: {
+                    refresh: session?.user?.refresh
                 },
                 onSuccess: () => {
+                    signOut()
                 },
             });
         } catch (err) {

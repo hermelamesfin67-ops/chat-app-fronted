@@ -12,9 +12,12 @@ import { MessageTime } from "@/components/message-time";
 import { Input } from "@/components/ui/input";
 import useDynamicMutation from "@/lib/api/use-post-data";
 import { formatDateSeparator } from "@/utils/date";
+import { Form, Formik, FormikState } from "formik"
+import { Button } from "@/components/ui/button";
 interface Message {
+  id: string
   conversation: string,
-  sender: string,
+  sender: { username: string },
   text: string,
   created_at: Date,
   is_read: boolean,
@@ -24,21 +27,20 @@ interface Message {
 interface ChatRoomProps {
   conversationId: string;
 }
-
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL!;
 export default function ChatRoom({ conversationId }: ChatRoomProps) {
   const router = useRouter();
   const { data: session } = useSession()
   const postMutation = useDynamicMutation({})
   const token = session?.user?.access
-  const id = session?.user?.user?.id
-
-  const [text, setText] = useState("");
+  const username = session?.user?.user?.username
 
   const [connected, setConnected] = useState(false);
 
   const socketRef = useRef<WebSocket | null>(null);
-
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
   /*
    * Get old messages
@@ -49,94 +51,98 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
     `messages/?conversation=${conversationId}`,
   );
 
-  const roomMessages = getChatRoom.data ?? [];
-  const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
   const messages: Message[] = useMemo(
-    () => [...roomMessages, ...liveMessages],
-    [roomMessages, liveMessages],
+    () => [...(getChatRoom.data ?? []), ...liveMessages],
+    [getChatRoom.data, liveMessages],
   );
 
   /*
    * WebSocket
    */
-
   useEffect(() => {
-
-    if (!token) {
-      console.error("No access token");
-
-      router.push(routes.signIn);
-
+    if (!conversationId || !token) {
       return;
     }
 
-    const WS_URL = process.env.NEXT_PUBLIC_WS_URL;
+    let isCurrent = true;
 
-    const socket = new WebSocket(
-      `${WS_URL}ws/chat/${conversationId}/?token=${token}`,
-    );
+    const url =
+      `${WS_URL}ws/chat/${conversationId}/?token=${encodeURIComponent(token)}`;
+
+    console.log("Opening WebSocket:", url);
+
+    const socket = new WebSocket(url);
 
     socketRef.current = socket;
 
-    /*
-     * Connected
-     */
-
     socket.onopen = () => {
-      console.log("WebSocket connected");
+      if (!isCurrent) return;
 
+      console.log("WebSocket connected");
       setConnected(true);
     };
 
-    /*
-     * Receive message
-     */
-
     socket.onmessage = (event) => {
+      if (!isCurrent) return;
+
       try {
-        const data = JSON.parse(event.data);
+        const message: Message = JSON.parse(event.data);
 
-        console.log("WebSocket message:", data);
+        console.log("New message:", message);
 
-        const newMessage = data.message ?? data;
+        setLiveMessages((prev) => {
+          if (message.id && prev.some((m) => m.id === message.id)) {
+            return prev;
+          }
 
-        setLiveMessages((previous) => [...previous, newMessage]);
+          return [...prev, message];
+        });
       } catch (error) {
-        console.error("Invalid WebSocket data:", error);
+        console.error("Invalid WebSocket message:", error);
       }
     };
 
-    /*
-     * Disconnect
-     */
-
-    socket.onclose = () => {
-      console.log("WebSocket disconnected");
-
-      setConnected(false);
-    };
-
-    /*
-     * Error
-     */
-
     socket.onerror = (error) => {
+      if (!isCurrent) return;
+
       console.error("WebSocket error:", error);
+    };
+
+    socket.onclose = (event) => {
+      if (!isCurrent) return;
+
+      console.log(
+        "WebSocket disconnected:",
+        event.code,
+        event.reason || "No reason"
+      );
 
       setConnected(false);
     };
-
-    /*
-     * Cleanup
-     */
 
     return () => {
-      socket.close();
+      isCurrent = false;
 
-      socketRef.current = null;
+      console.log("Closing WebSocket");
+
+      socket.onopen = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      socket.onclose = null;
+
+      if (
+        socket.readyState === WebSocket.OPEN ||
+        socket.readyState === WebSocket.CONNECTING
+      ) {
+        socket.close();
+      }
+
+      if (socketRef.current === socket) {
+        socketRef.current = null;
+      }
     };
-  }, [conversationId, router]);
+  }, [conversationId, token]);
 
   /*
    * Scroll to bottom
@@ -152,36 +158,25 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
    * Send message
    */
 
-  async function sendMessage(event: React.FormEvent) {
+  async function sendMessage(values: { message: string }, resetForm: (nextState?: Partial<FormikState<{
+    message: string;
+  }>> | undefined) => void) {
     try {
       await postMutation.mutateAsync({
-        url: "conversations/",
+        url: "messages/",
         method: "POST",
         body: {
+          conversation: conversationId,
+          text: values.message,
+          message_type: "text"
         },
-        onSuccess: (res) => {
-
+        onSuccess: () => {
+          resetForm();
         },
       });
     } catch (err) {
       console.log(err);
     }
-    // event.preventDefault();
-    // const message = text.trim();
-    // if (!message) {
-    //   return;
-    // }
-    // const socket = socketRef.current;
-    // if (!socket || socket.readyState !== WebSocket.OPEN) {
-    //   console.error("WebSocket is not connected");
-    //   return;
-    // }
-    // socket.send(
-    //   JSON.stringify({
-    //     message: message,
-    //   }),
-    // );
-    // setText("");
   }
 
   if (getChatRoom.isFetching) return <ChatRoomLoader />;
@@ -225,7 +220,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
             const showDateSeparator = currentDate !== previousDate;
 
             return (
-              <React.Fragment key={message.conversation ?? `message-${index}`}>
+              <React.Fragment key={index}>
                 {showDateSeparator && (
                   <div className="flex justify-center py-3">
                     <span className="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-500">
@@ -238,7 +233,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
                   <div
                     className={cn(
                       "min-w-44 max-w-md px-4 py-1 rounded-lg",
-                      id === message.sender
+                      username === message.sender?.username
                         ? "ml-auto bg-[#E2E8F0]"
                         : "mr-auto bg-[#FDF8F6] pe-10"
                     )}
@@ -248,7 +243,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
                     <p
                       className={cn(
                         "text-end text-xs text-black/30",
-                        id !== message.sender && "-me-7"
+                        username !== message.sender?.username && "-me-7"
                       )}
                     >
                       <MessageTime date={message.created_at} />
@@ -265,22 +260,34 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
 
       {/* Message input */}
 
-      <form onSubmit={sendMessage} className="border-t p-3 flex gap-2">
-        <Input
-          type="text"
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Write a message..."
-          className="flex-1 border rounded-lg px-4 py-2 outline-none"
-        />
-        <button
-          type="submit"
-          disabled={!connected}
-          className="bg-blue-500 text-white px-5 py-2 rounded-lg disabled:bg-gray-400"
-        >
-          Send
-        </button>
-      </form>
+      <Formik
+        initialValues={{
+          message: ""
+        }}
+        validationSchema={""}
+        onSubmit={(val, { resetForm }) => {
+          sendMessage(val, resetForm);
+        }}
+      >
+        {({ setFieldValue, values }) => (
+          <Form className="border-t p-3 flex gap-2">
+            <Input
+              type="text"
+              value={values.message}
+              onChange={(event) => setFieldValue("message", event.target.value)}
+              placeholder="Write a message..."
+              className="flex-1 border rounded-lg px-4 py-2 outline-none"
+            />
+            <Button
+              type="submit"
+              disabled={!connected || postMutation.isPending}
+              className="bg-blue-500 text-white px-5 py-2 rounded-lg disabled:bg-gray-400"
+            >
+              {postMutation.isPending ? "Sending.." : "Send"}
+            </Button>
+          </Form>
+        )}
+      </Formik>
     </div>
   );
 }

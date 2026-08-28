@@ -13,7 +13,12 @@ function HomePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [debouncedValue, setDebouncedValue] = useState("")
 
-  const getSearch = useFetchData([queryKeys.getSearch, debouncedValue], `users/search/?q=${debouncedValue}`);
+  const getSearch = useFetchData(
+    [queryKeys.getSearch, debouncedValue],
+    `users/search/?q=${debouncedValue}`,
+    undefined,
+    !!debouncedValue
+  );
   const users = getSearch.data;
 
   const [,] = useDebounce(
