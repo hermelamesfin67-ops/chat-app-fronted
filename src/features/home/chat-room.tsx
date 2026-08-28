@@ -14,6 +14,7 @@ import useDynamicMutation from "@/lib/api/use-post-data";
 import { formatDateSeparator } from "@/utils/date";
 import { Form, Formik, FormikState } from "formik"
 import { Button } from "@/components/ui/button";
+import EmptyData from "@/components/empty-data";
 interface Message {
   id: string
   conversation: string,
@@ -207,7 +208,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
 
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-3">
-          {messages.map((message, index) => {
+          {messages?.length ? messages?.map((message, index) => {
             const messageDate = new Date(message.created_at);
 
             const currentDate = messageDate.toLocaleDateString("en-GB");
@@ -252,7 +253,8 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
                 </div>
               </React.Fragment>
             );
-          })}
+          })
+            : <EmptyData title={"Chat history appears here."} />}
 
           <div ref={messagesEndRef} />
         </div>

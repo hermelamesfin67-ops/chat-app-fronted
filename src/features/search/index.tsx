@@ -1,3 +1,4 @@
+import EmptyData from '@/components/empty-data';
 import ChatListLoader from '@/components/loader/chat-list';
 import useDynamicMutation from '@/lib/api/use-post-data';
 import { routes } from '@/lib/routes';
@@ -25,7 +26,7 @@ function SearchPage({ data, isLoading }: Props) {
                     lastSeen={user?.is_online}
                 />
             ))
-                : <div className='flex items-center justify-center h-96 text-gray-400'>Search result appear here.</div>
+                : <EmptyData title={"Search result appears here."} />
             }
         </div>
     )

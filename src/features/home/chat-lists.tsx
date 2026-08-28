@@ -1,4 +1,5 @@
 "use client"
+import EmptyData from "@/components/empty-data";
 import ChatListLoader from "@/components/loader/chat-list";
 import { MessageTime } from "@/components/message-time";
 import { queryKeys } from "@/lib/api/query-keys";
@@ -26,7 +27,7 @@ function ChatLists() {
 
   return (
     <div className="grid gap-2 p-1">
-      {chats?.length &&
+      {chats?.length ?
         chats?.map((chat) => {
           return (
             <ChatListRow
@@ -39,7 +40,7 @@ function ChatLists() {
               key={chat?.id}
             />
           );
-        })}
+        }) : <EmptyData title={"Chat lists appears here."} />}
     </div>
   );
 }

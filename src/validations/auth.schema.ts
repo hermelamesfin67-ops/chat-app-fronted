@@ -11,11 +11,10 @@ export const createAccountSchema = Yup.object().shape({
     .required("Email is required"),
   phoneNumber: Yup.string()
     .required("Phone Number is required")
-    .matches(
-      /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-      "Invalid email format",
-    ),
-  password: Yup.string().required("Password is required"),
+    .matches(/^[97]\d{8}$/, "Phone number must start with 9 or 7"),
+  password: Yup.string()
+    .required("Password is required")
+    .min(6, "Minimum 6 characters is allowed."),
   confirmPassword: Yup.string()
     .oneOf([Yup.ref("password")], "Password must match")
     .transform((value) => value.trim())
