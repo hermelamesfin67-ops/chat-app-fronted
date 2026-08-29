@@ -9,14 +9,16 @@ import Image from "next/image";
 import Link from "next/link";
 
 type ChatListType = {
-  id: string;
-  user: {
-    id: number;
-    name: string;
-    avatar: string;
-  };
-  last_message: string;
-  created_at: Date;
+  conversation_id: string,
+  other_user: {
+    id: string,
+    name: string,
+    profile: string,
+    status: boolean,
+    last_seen: string
+  },
+  last_message: string,
+  created_at: Date
 };
 
 function ChatLists() {
@@ -31,13 +33,13 @@ function ChatLists() {
         chats?.map((chat) => {
           return (
             <ChatListRow
-              id={chat.id}
+              key={chat?.conversation_id}
+              id={chat.conversation_id}
               messageAt={chat.created_at}
-              avatar={chat.user?.avatar || "/profile.jpeg"}
+              avatar={chat.other_user?.profile || "/profile.jpeg"}
               online={1}
-              title={chat?.user?.name}
+              title={chat?.other_user?.name}
               message={chat?.last_message}
-              key={chat?.id}
             />
           );
         }) : <EmptyData title={"Chat lists appears here."} />}

@@ -52,7 +52,7 @@ const ChatListRow = ({ id, conversationId, title, avatar, lastSeen }: RowProps) 
                     "participants": [session?.user?.user?.id, id]
                 },
                 onSuccess: (res) => {
-                    router.push(routes.chatRoom(res?.id))
+                    router.push(routes.chatRoom(res?.conversation_id))
                 },
             });
         } catch (err) {

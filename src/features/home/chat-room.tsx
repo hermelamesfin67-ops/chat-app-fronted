@@ -15,16 +15,43 @@ import { formatDateSeparator } from "@/utils/date";
 import { Form, Formik, FormikState } from "formik"
 import { Button } from "@/components/ui/button";
 import EmptyData from "@/components/empty-data";
-interface Message {
-  id: string
-  conversation: string,
-  sender: { username: string },
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import MessageActions from "./message-actions";
+import Image from "next/image";
+
+export interface Message {
+  message_id: string,
+  conversation_id: string,
+  sender: {
+    username: string,
+    email: string,
+    phone_number: string,
+    profile_picture: string
+  },
   text: string,
   created_at: Date,
   is_read: boolean,
   message_type: string
 }
 
+const initialMessage = {
+  message_id: "",
+  conversation_id: "",
+  sender: {
+    username: "",
+    email: "",
+    phone_number: "",
+    profile_picture: ""
+  },
+  text: "",
+  created_at: new Date(),
+  is_read: false,
+  message_type: ""
+}
 interface ChatRoomProps {
   conversationId: string;
 }
@@ -36,12 +63,19 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
   const token = session?.user?.access
   const username = session?.user?.user?.username
 
-  const [connected, setConnected] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [messageToBeEdit, setMessageToBeEdit] = useState<Message>(initialMessage);
 
+  const [connected, setConnected] = useState(false);
   const socketRef = useRef<WebSocket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
+
+  const getRoomData = useFetchData(
+    [queryKeys.getRoomData],
+    `chat-rooms/`,
+  );
+  const roomData = getRoomData.data
 
   /*
    * Get old messages
@@ -51,7 +85,6 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
     [queryKeys.getChats, conversationId],
     `messages/?conversation=${conversationId}`,
   );
-
 
   const messages: Message[] = useMemo(
     () => [...(getChatRoom.data ?? []), ...liveMessages],
@@ -93,7 +126,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
         console.log("New message:", message);
 
         setLiveMessages((prev) => {
-          if (message.id && prev.some((m) => m.id === message.id)) {
+          if (message.message_id && prev.some((m) => m.message_id === message.message_id)) {
             return prev;
           }
 
@@ -164,8 +197,8 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
   }>> | undefined) => void) {
     try {
       await postMutation.mutateAsync({
-        url: "messages/",
-        method: "POST",
+        url: isEditMode ? `messages/${messageToBeEdit.message_id}/` : "messages/",
+        method: isEditMode ? "PUT" : "POST",
         body: {
           conversation: conversationId,
           text: values.message,
@@ -173,6 +206,8 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
         },
         onSuccess: () => {
           resetForm();
+          setIsEditMode(false)
+          setMessageToBeEdit(initialMessage)
         },
       });
     } catch (err) {
@@ -192,22 +227,39 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
         </button>
 
         <div>
-          <h1 className="font-bold">Chat</h1>
+          {roomData?.length ?
+            <div className="flex items-center gap-3">
+              <div className="border rounded-full w-12 h-12 bg-gray-50 overflow-hidden">
+                <Image
+                  src={roomData[0]?.other_user?.profile}
+                  alt="avatar"
+                  loading="eager"
+                  className="object-cover"
+                  width={100}
+                  height={100}
+                />
+              </div>
+              <div>
+                <h1 className="font-bold capitalize">{roomData[0]?.other_user?.name}</h1>
+                <div className="text-xs">
+                  {connected ? (
+                    <span className="text-green-500">Online</span>
+                  ) : (
+                    <span className="text-blue-500">Connecting</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            : "Connecting..."}
 
-          <div className="text-xs">
-            {connected ? (
-              <span className="text-green-500">Online</span>
-            ) : (
-              <span className="text-blue-500">Connecting</span>
-            )}
-          </div>
+
         </div>
       </div>
 
       {/* Messages */}
 
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {messages?.length ? messages?.map((message, index) => {
             const messageDate = new Date(message.created_at);
 
@@ -229,28 +281,42 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
                     </span>
                   </div>
                 )}
+                {/* messages/10/ */}
+                <Popover>
+                  <PopoverTrigger>
+                    <div className="flex w-full">
+                      <div
+                        className={cn(
+                          "min-w-44 max-w-md px-2.5 py-1 text-sm rounded-lg",
+                          username === message.sender?.username
+                            ? "ml-auto bg-[#E2E8F0]"
+                            : "mr-auto bg-[#FDF8F6] pe-7",
+                        )}
+                      >
+                        {message.text}
 
-                <div className="flex">
-                  <div
-                    className={cn(
-                      "min-w-44 max-w-md px-4 py-1 rounded-lg",
-                      username === message.sender?.username
-                        ? "ml-auto bg-[#E2E8F0]"
-                        : "mr-auto bg-[#FDF8F6] pe-10"
-                    )}
-                  >
-                    {message.text}
+                        <p
+                          className={cn(
+                            "text-end text-xs text-black/30",
+                            username !== message.sender?.username && "-me-3"
+                          )}
+                        >
+                          <MessageTime date={message.created_at} />
+                        </p>
+                      </div>
+                    </div>
+                  </PopoverTrigger>
+                  {username === message.sender?.username &&
+                    <PopoverContent align={username === message.sender?.username ? "end" : "start"} className={cn("w-fit")}>
+                      <MessageActions
+                        message={message}
+                        setIsEditMode={setIsEditMode}
+                        setMessageToBeEdit={setMessageToBeEdit}
+                      />
+                    </PopoverContent>
+                  }
+                </Popover>
 
-                    <p
-                      className={cn(
-                        "text-end text-xs text-black/30",
-                        username !== message.sender?.username && "-me-7"
-                      )}
-                    >
-                      <MessageTime date={message.created_at} />
-                    </p>
-                  </div>
-                </div>
               </React.Fragment>
             );
           })
@@ -264,32 +330,35 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
 
       <Formik
         initialValues={{
-          message: ""
+          message: messageToBeEdit.text ?? ""
         }}
+        enableReinitialize={!!isEditMode}
         validationSchema={""}
         onSubmit={(val, { resetForm }) => {
           sendMessage(val, resetForm);
         }}
       >
-        {({ setFieldValue, values }) => (
-          <Form className="border-t p-3 flex gap-2">
-            <Input
-              type="text"
-              value={values.message}
-              onChange={(event) => setFieldValue("message", event.target.value)}
-              placeholder="Write a message..."
-              className="flex-1 border rounded-lg px-4 py-2 outline-none"
-            />
-            <Button
-              type="submit"
-              disabled={!connected || postMutation.isPending}
-              className="bg-blue-500 text-white px-5 py-2 rounded-lg disabled:bg-gray-400"
-            >
-              {postMutation.isPending ? "Sending.." : "Send"}
-            </Button>
-          </Form>
-        )}
+        {({ setFieldValue, values }) => {
+          return (
+            <Form className="border-t p-3 flex gap-2">
+              <Input
+                type="text"
+                value={values.message}
+                onChange={(event) => setFieldValue("message", event.target.value)}
+                placeholder="Write a message..."
+                className="flex-1 border rounded-lg px-4 py-2 outline-none"
+              />
+              <Button
+                type="submit"
+                disabled={!connected || postMutation.isPending}
+                className="bg-blue-500 text-white px-5 py-2 rounded-lg disabled:bg-gray-400"
+              >
+                {postMutation.isPending ? "Sending.." : isEditMode ? "Update" : "Send"}
+              </Button>
+            </Form>
+          )
+        }}
       </Formik>
-    </div>
+    </div >
   );
 }
