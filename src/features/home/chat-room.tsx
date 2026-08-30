@@ -113,7 +113,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
     socket.onopen = () => {
       if (!isCurrent) return;
 
-      console.log("WebSocket connected");
+      console.log("🟢 WebSocket connected");
       setConnected(true);
     };
 
@@ -123,31 +123,25 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
       try {
         const message: Message = JSON.parse(event.data);
 
-        console.log("New message:", message);
+        console.log("🔥 New message:", message);
 
-        setLiveMessages((prev) => {
-          if (message.message_id && prev.some((m) => m.message_id === message.message_id)) {
-            return prev;
-          }
+        setLiveMessages((prev) => [
+          ...prev,
+          message,
+        ]);
 
-          return [...prev, message];
-        });
       } catch (error) {
         console.error("Invalid WebSocket message:", error);
       }
     };
 
     socket.onerror = (error) => {
-      if (!isCurrent) return;
-
-      console.error("WebSocket error:", error);
+      console.error("🔴 WebSocket error:", error);
     };
 
     socket.onclose = (event) => {
-      if (!isCurrent) return;
-
       console.log(
-        "WebSocket disconnected:",
+        "🟡 WebSocket disconnected:",
         event.code,
         event.reason || "No reason"
       );
@@ -176,7 +170,9 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
         socketRef.current = null;
       }
     };
+
   }, [conversationId, token]);
+
 
   /*
    * Scroll to bottom
@@ -192,28 +188,61 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
    * Send message
    */
 
-  async function sendMessage(values: { message: string }, resetForm: (nextState?: Partial<FormikState<{
-    message: string;
-  }>> | undefined) => void) {
-    try {
-      await postMutation.mutateAsync({
-        url: isEditMode ? `messages/${messageToBeEdit.message_id}/` : "messages/",
-        method: isEditMode ? "PUT" : "POST",
-        body: {
-          conversation: conversationId,
-          text: values.message,
-          message_type: "text"
-        },
-        onSuccess: () => {
-          resetForm();
-          setIsEditMode(false)
-          setMessageToBeEdit(initialMessage)
-        },
-      });
-    } catch (err) {
-      console.log(err);
+  // async function sendMessage(values: { message: string }, resetForm: (nextState?: Partial<FormikState<{
+  //   message: string;
+  // }>> | undefined) => void) {
+  //   try {
+  //     await postMutation.mutateAsync({
+  //       url: isEditMode ? `messages/${messageToBeEdit.message_id}/` : "messages/",
+  //       method: isEditMode ? "PUT" : "POST",
+  //       body: {
+  //         conversation: conversationId,
+  //         text: values.message,
+  //         message_type: "text"
+  //       },
+  //       onSuccess: () => {
+  //         resetForm();
+  //         setIsEditMode(false)
+  //         setMessageToBeEdit(initialMessage)
+  //       },
+  //     });
+  //   } catch (err) {
+  //     console.log(err);
+  //   }
+  // }
+  function sendMessage(
+    values: { message: string },
+    resetForm: (
+      nextState?: Partial<FormikState<{ message: string }>>
+    ) => void
+  ) {
+    const socket = socketRef.current;
+
+    console.log("SOCKET:", socket);
+    console.log("READY STATE:", socket?.readyState);
+
+    if (!socket || socket.readyState !== WebSocket.OPEN) {
+      console.log("❌ Socket isn't open");
+      return;
     }
+
+    const text = values.message.trim();
+
+    if (!text) return;
+
+    console.log("📤 SENDING:", text);
+
+    socket.send(
+      JSON.stringify({
+        text: text,
+      })
+    );
+
+    console.log("📤 SEND CALLED");
+
+    resetForm();
   }
+
 
   if (getChatRoom.isFetching) return <ChatRoomLoader />;
 
