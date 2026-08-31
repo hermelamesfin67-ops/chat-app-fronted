@@ -60,7 +60,7 @@ type Props = {
 
 const ChatListRow = ({ id, title, message, messageAt, avatar, online }: Props) => {
   return (
-    <Link href={routes.chatRoom(id)} className="flex gap-3 items-center shadow p-3 rounded-3xl">
+    <Link href={routes.chatRoom(id)} className="flex gap-3 items-center shadow p-3 bg-white rounded-3xl">
       <div className="relative p-0.5 shrink-0">
         <div className="border rounded-full w-12 h-12 bg-gray-50 overflow-hidden">
           <Image

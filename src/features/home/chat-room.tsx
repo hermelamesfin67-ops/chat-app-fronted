@@ -9,12 +9,11 @@ import { routes } from "@/lib/routes";
 import ChatRoomLoader from "@/components/loader/chat-room";
 import { cn } from "@/lib/utils";
 import { MessageTime } from "@/components/message-time";
-import { Input } from "@/components/ui/input";
 import useDynamicMutation from "@/lib/api/use-post-data";
 import { formatDateSeparator } from "@/utils/date";
 import { Form, Formik, FormikState } from "formik"
-import { Button } from "@/components/ui/button";
 import EmptyData from "@/components/empty-data";
+import { Send } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -72,8 +71,8 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
   const [liveMessages, setLiveMessages] = useState<Message[]>([]);
 
   const getRoomData = useFetchData(
-    [queryKeys.getRoomData],
-    `chat-rooms/`,
+    [queryKeys.getRoomData, conversationId],
+    `chat-rooms/?conversation=${conversationId}`,
   );
   const roomData = getRoomData.data
 
@@ -188,28 +187,28 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
    * Send message
    */
 
-  // async function sendMessage(values: { message: string }, resetForm: (nextState?: Partial<FormikState<{
-  //   message: string;
-  // }>> | undefined) => void) {
-  //   try {
-  //     await postMutation.mutateAsync({
-  //       url: isEditMode ? `messages/${messageToBeEdit.message_id}/` : "messages/",
-  //       method: isEditMode ? "PUT" : "POST",
-  //       body: {
-  //         conversation: conversationId,
-  //         text: values.message,
-  //         message_type: "text"
-  //       },
-  //       onSuccess: () => {
-  //         resetForm();
-  //         setIsEditMode(false)
-  //         setMessageToBeEdit(initialMessage)
-  //       },
-  //     });
-  //   } catch (err) {
-  //     console.log(err);
-  //   }
-  // }
+  async function updateMessage(values: { message: string }, resetForm: (nextState?: Partial<FormikState<{
+    message: string;
+  }>> | undefined) => void) {
+    try {
+      await postMutation.mutateAsync({
+        url: isEditMode ? `messages/${messageToBeEdit.message_id}/` : "messages/",
+        method: isEditMode ? "PUT" : "POST",
+        body: {
+          conversation: conversationId,
+          text: values.message,
+          message_type: "text"
+        },
+        onSuccess: () => {
+          resetForm();
+          setIsEditMode(false)
+          setMessageToBeEdit(initialMessage)
+        },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
   function sendMessage(
     values: { message: string },
     resetForm: (
@@ -250,7 +249,7 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
     <div className="h-screen flex flex-col">
       {/* Header */}
 
-      <div className="h-16 border-b flex items-center px-4 gap-3">
+      <div className="h-16 border-b flex items-center px-4 gap-3 bg-white rounded-md shadow-md">
         <button onClick={() => router.push(routes.home)} className="text-xl">
           ←
         </button>
@@ -316,17 +315,17 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
                     <div className="flex w-full">
                       <div
                         className={cn(
-                          "min-w-44 max-w-md px-2.5 py-1 text-sm rounded-lg",
+                          "min-w-16 leading-3 max-w-md px-2.5 py-0.5 text-sm rounded-lg",
                           username === message.sender?.username
-                            ? "ml-auto bg-[#E2E8F0]"
-                            : "mr-auto bg-[#FDF8F6] pe-7",
+                            ? "ml-auto bg-[#38BDF8] text-white text-end"
+                            : "mr-auto bg-[#E0F2FE] text-[#1E293B] text-start pe-7",
                         )}
                       >
                         {message.text}
 
                         <p
                           className={cn(
-                            "text-end text-xs text-black/30",
+                            "text-end text-xs text-white/60",
                             username !== message.sender?.username && "-me-3"
                           )}
                         >
@@ -364,26 +363,29 @@ export default function ChatRoom({ conversationId }: ChatRoomProps) {
         enableReinitialize={!!isEditMode}
         validationSchema={""}
         onSubmit={(val, { resetForm }) => {
-          sendMessage(val, resetForm);
+          console.log(isEditMode)
+          if (isEditMode) updateMessage(val, resetForm);
+          else sendMessage(val, resetForm);
         }}
       >
         {({ setFieldValue, values }) => {
           return (
-            <Form className="border-t p-3 flex gap-2">
-              <Input
-                type="text"
+            <Form className="bg-white rounded-md shadow-md p-3 flex items-center gap-2">
+              <textarea
+                rows={2}
                 value={values.message}
                 onChange={(event) => setFieldValue("message", event.target.value)}
                 placeholder="Write a message..."
-                className="flex-1 border rounded-lg px-4 py-2 outline-none"
+                className="flex-1 border rounded-lg px-4 py-2 text-sm outline-none"
               />
-              <Button
+              <button
                 type="submit"
                 disabled={!connected || postMutation.isPending}
-                className="bg-blue-500 text-white px-5 py-2 rounded-lg disabled:bg-gray-400"
+                className="border border-[#0284C7] p-2 rounded-lg"
               >
-                {postMutation.isPending ? "Sending.." : isEditMode ? "Update" : "Send"}
-              </Button>
+
+                {postMutation.isPending ? "Sending.." : <Send className="text-[#0284C7] disabled:text-black text-2xl" size={28} />}
+              </button>
             </Form>
           )
         }}
