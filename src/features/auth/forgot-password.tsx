@@ -21,7 +21,7 @@ import { routes } from '@/lib/routes'
 type StepType = "REQUEST_PASSWORD" | "VERIFY_OTP" | "FORGOT_PASSWORD"
 
 function ForgotPassword() {
-    const [step, setStep] = React.useState<StepType>("VERIFY_OTP")
+    const [step, setStep] = React.useState<StepType>("REQUEST_PASSWORD")
     const [phone, setPhone] = useState("")
     const [time, setTime] = useState(0)
     const [tempToken, setTempToken] = useState("")
