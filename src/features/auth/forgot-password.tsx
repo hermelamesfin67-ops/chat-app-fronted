@@ -157,6 +157,7 @@ const VerifyOTP = ({ phone, setStep, time, setTime, setTempToken }
                             <InputOTPSlot index={2} className='w-10 h-10' />
                             <InputOTPSlot index={3} className='w-10 h-10' />
                             <InputOTPSlot index={4} className='w-10 h-10' />
+                            <InputOTPSlot index={5} className='w-10 h-10' />
                         </InputOTPGroup>
                     </InputOTP>
                     <div className="mt-1">

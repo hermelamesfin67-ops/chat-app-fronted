@@ -11,7 +11,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     if (!session) router.replace(routes.signIn)
 
     return (
-        <div className='relative max-w-xl mx-auto w-full'>
+        <div className='relative max-w-lg mx-auto w-full'>
             {children}
             <BottomNav />
         </div>

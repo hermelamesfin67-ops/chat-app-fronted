@@ -19,7 +19,7 @@ function BottomNav() {
     const isChatPage = pathName.startsWith('/chats/');
     if (isChatPage || !session) return null;
     return (
-        <nav className="flex justify-between fixed bottom-0 left-0 right-0 p-3 border bg-white rounded-full m-3 shadow-lg max-w-xl mx-auto">
+        <nav className="flex justify-between fixed bottom-0 left-0 right-0 p-3 border bg-white rounded-full m-3 shadow-lg max-w-lg mx-auto">
             {menus.map((menu, index) => (
                 <Link href={menu.link} key={index} className="w-fit">
                     {menu?.icon}
