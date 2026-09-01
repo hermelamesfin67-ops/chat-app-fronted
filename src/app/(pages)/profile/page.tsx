@@ -1,3 +1,4 @@
+import Profile from "@/features/profile";
 import { metaObject } from "@/lib/site-seo";
 
 export const metadata = {
@@ -6,6 +7,6 @@ export const metadata = {
 
 export default function page() {
     return (
-        <div>Profile</div>
+        <Profile />
     )
 }
