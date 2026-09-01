@@ -1,13 +1,13 @@
 "use client"
 import { routes } from "@/lib/routes";
-import { Search, Home, Settings, UserShield } from "lucide-react";
+import { Home, Settings, UserShield } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menus = [
     { link: routes.home, icon: <Home /> },
-    { link: routes.search, icon: <Search /> },
+    // { link: routes.search, icon: <Search /> },
     { link: routes.profile, icon: <UserShield /> },
     { link: routes.settings, icon: <Settings /> },
 ]
