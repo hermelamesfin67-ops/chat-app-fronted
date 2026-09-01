@@ -109,17 +109,18 @@ function Profile() {
                     </div>
 
                     <div className="flex flex-col gap-3">
-                        <FormikInput
-                            id="phoneNumber"
-                            name="phoneNumber"
-                            label="Phone Number"
-                            placeholder="900000000"
-                            pattern="number"
-                            maxLength={9}
-                            prefix="+251"
-                            disabled={!isEditMode}
-                            className="bg-gray-50 dark:bg-gray-100"
-                        />
+                        {!isEditMode &&
+                            <FormikInput
+                                id="phoneNumber"
+                                name="phoneNumber"
+                                label="Phone Number"
+                                placeholder="900000000"
+                                pattern="number"
+                                maxLength={9}
+                                prefix="+251"
+                                disabled={!isEditMode}
+                                className="bg-gray-50 dark:bg-gray-100"
+                            />}
                         <FormikInput
                             id="email"
                             name="email"

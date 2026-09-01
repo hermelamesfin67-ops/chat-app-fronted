@@ -1,11 +1,14 @@
 "use client"
 import useDynamicMutation from "@/lib/api/use-post-data";
+import { routes } from "@/lib/routes";
 import { SquareUser, LockKeyhole, Globe, Bell, MessageCircleQuestionMark, LogOut, ChevronRight } from "lucide-react"
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 
 function Settings() {
-    const {data: session} = useSession()
+    const router = useRouter()
+    const { data: session } = useSession()
     const postMutation = useDynamicMutation({})
     const handleLogout = async () => {
         try {
@@ -30,6 +33,7 @@ function Settings() {
         { name: "Language", link: "#", icon: <Globe /> },
         { name: "Notification", link: "#", icon: <Bell /> },
         { name: "Help", link: "#", icon: <MessageCircleQuestionMark /> },
+        { name: "Change Password", link: routes.changePassword, icon: <LockKeyhole /> },
         { name: "Logout", link: "#", icon: <LogOut />, onclick: handleLogout },
     ]
 
@@ -39,7 +43,7 @@ function Settings() {
             {menus.map((menu, i) => (
                 <div onClick={() => {
                     if (menu.onclick) menu.onclick()
-                    else return
+                    else router.push(menu.link)
                 }} key={i} className="flex items-center gap-3 justify-between">
                     <div className="flex items-center gap-2">
                         <div className="bg-gray-200 p-1 rounded-md">

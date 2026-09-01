@@ -9,4 +9,5 @@ export const routes = {
   profile: "/profile",
   search: "/search",
   settings: "/settings",
+  changePassword: "/change-password",
 };

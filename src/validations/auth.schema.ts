@@ -32,5 +32,18 @@ export const loginSchema = Yup.object().shape({
   password: Yup.string().required("Password is required"),
 });
 
+export const changePasswordSchema = Yup.object().shape({
+  oldPassword: Yup.string().required("Old Password is required"),
+  password: Yup.string()
+    .required("New Password is required")
+    .min(6, "Minimum 6 characters is allowed."),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Password must match")
+    .transform((value) => value.trim())
+    .required("Confirm Password is required"),
+});
+
+
 export type CreateAccountSchemaType = Yup.InferType<typeof createAccountSchema>;
 export type LoginSchemaType = Yup.InferType<typeof loginSchema>;
+export type ChangePasswordSchemaType = Yup.InferType<typeof changePasswordSchema>;
