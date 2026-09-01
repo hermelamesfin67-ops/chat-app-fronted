@@ -43,7 +43,36 @@ export const changePasswordSchema = Yup.object().shape({
     .required("Confirm Password is required"),
 });
 
+export const requestOtpSchema = Yup.object().shape({
+  phoneNumber: Yup.string()
+    .required("Phone Number is required")
+    .matches(
+      /^[97]\d{8}$/,
+      "Phone number must start with 9 or 7 and be 9 digits long",
+    ),
+});
 
+export const createPasswordSchema = Yup.object().shape({
+  password: Yup.string()
+    .required("New Password is required")
+    .min(6, "Minimum 6 characters is allowed."),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Password must match")
+    .transform((value) => value.trim())
+    .required("Confirm Password is required"),
+});
+
+export const verifyOtpSchema = Yup.object().shape({
+  otp: Yup.string()
+    .min(6, "Minimum OTP length is 6")
+    .required("OTP is required"),
+});
+
+export type VerifyOtpSchemaType = Yup.InferType<typeof verifyOtpSchema>;
+export type RequestOtpSchemaType = Yup.InferType<typeof requestOtpSchema>;
+export type CreatePasswordSchemaType = Yup.InferType<typeof createPasswordSchema>;
 export type CreateAccountSchemaType = Yup.InferType<typeof createAccountSchema>;
 export type LoginSchemaType = Yup.InferType<typeof loginSchema>;
-export type ChangePasswordSchemaType = Yup.InferType<typeof changePasswordSchema>;
+export type ChangePasswordSchemaType = Yup.InferType<
+  typeof changePasswordSchema
+>;

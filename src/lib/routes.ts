@@ -3,6 +3,7 @@ export const routes = {
   signOut: "/auth/signout",
   signUp: "/auth/signup",
   error: "/auth/error",
+  forgotPassword: "/auth/forgot-password",
 
   home: "/",
   chatRoom: (slug: string) => `/chats/${slug}`,

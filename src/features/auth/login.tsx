@@ -86,10 +86,8 @@ function Login() {
                         <Button size={"lg"} disabled={postMutation.isPending} className={"w-full"} type="submit">
                             {postMutation.isPending ? "Loading..." : "Login"}
                         </Button>
-                        <p className="text-xs text-primary">Forgot password?</p>
-
-
-                        <Link href={routes.signUp} className="text-sm  text-primary py-3">Don&apos;t have an account ? Sign Up</Link>
+                        <Link href={routes.forgotPassword} className="text-xs text-primary">Forgot password?</Link>
+                        <Link href={routes.signUp} className="text-sm text-primary py-3">Don&apos;t have an account ? Sign Up</Link>
                     </div>
                 </Form>
             </Formik>

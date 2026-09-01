@@ -44,8 +44,8 @@ function Settings() {
                 <div onClick={() => {
                     if (menu.onclick) menu.onclick()
                     else router.push(menu.link)
-                }} key={i} className="flex items-center gap-3 justify-between">
-                    <div className="flex items-center gap-2">
+                }} key={i} className="flex items-center gap-3 justify-between w-full">
+                    <div className="flex items-center gap-2 w-full">
                         <div className="bg-gray-200 p-1 rounded-md">
                             {menu.icon}
                         </div>
